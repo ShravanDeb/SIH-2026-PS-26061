@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  Play, Pause, RotateCcw, AlertTriangle, ShieldCheck, Zap, Sun, Wind, Battery, Flame,
-  Cpu, Activity, CheckCircle2, ChevronRight, BarChart2, Radio, Clock, ShieldAlert, Sparkles
+  Play, Pause, AlertTriangle, ShieldCheck, Zap, Sun, Wind, Battery,
+  Cpu, Activity, Radio, Sparkles, BarChart2
 } from "lucide-react";
-import { Card, CardHeader, HealthBar, StatusBadge } from "../components/ui";
+import { Card, CardHeader } from "../components/ui";
 
 interface Scenario {
   id: string;
@@ -110,7 +110,16 @@ export default function JudgesSimulation() {
 
   // Live AI Decision State
   const [auditLog, setAuditLog] = useState<Array<{ id: string; time: string; layer: string; text: string; color: string }>>([]);
-  const logEndRef = useRef<HTMLDivElement>(null);
+  const terminalRef = useRef<HTMLDivElement>(null);
+
+  const addLog = (layer: string, text: string, color: string) => {
+    const now = new Date().toTimeString().slice(0, 8);
+    const ms = String(new Date().getMilliseconds()).padStart(3, "0");
+    setAuditLog(prev => [
+      ...prev.slice(-30),
+      { id: `${Date.now()}-${Math.random()}`, time: `${now}.${ms}`, layer, text, color }
+    ]);
+  };
 
   // 1. Apply Scenario Preset
   const applyScenario = (sc: Scenario) => {
@@ -123,15 +132,6 @@ export default function JudgesSimulation() {
     setBatterySoc(sc.batterySoc);
     setVibrationRms(sc.vibrationRms);
     addLog("SCENARIO", `Judge loaded preset '${sc.name}'. Re-evaluating cyber-physical boundaries.`, "#38bdf8");
-  };
-
-  const addLog = (layer: string, text: string, color: string) => {
-    const now = new Date().toTimeString().slice(0, 8);
-    const ms = String(new Date().getMilliseconds()).padStart(3, "0");
-    setAuditLog(prev => [
-      ...prev.slice(-30),
-      { id: `${Date.now()}-${Math.random()}`, time: `${now}.${ms}`, layer, text, color }
-    ]);
   };
 
   // 2. Pure AI Cyber-Physical Inference & Control Math
@@ -168,19 +168,16 @@ export default function JudgesSimulation() {
   } else {
     // Deficit
     if (batterySoc > 35.0) {
-      // Battery can absorb deficit up to 40 kW
       if (renewableDeficit <= 35.0) {
         battFlow = -Number(renewableDeficit.toFixed(1));
-        pGen = windGust >= 24.0 ? 0.0 : 0.0;
+        pGen = 0.0;
         genStatus = windGust >= 20.0 ? "warm-standby (8s primed)" : "standby";
       } else {
-        // High deficit: start generator
         pGen = Number(Math.min(80.0, renewableDeficit).toFixed(1));
         genStatus = "ACTIVE (Bridging Deficit)";
         battFlow = Number((totalRenewables + pGen - demand).toFixed(1));
       }
     } else {
-      // Low Battery: Force generator and possible shedding
       pGen = Number(Math.min(80.0, Math.max(30.0, renewableDeficit)).toFixed(1));
       genStatus = "ACTIVE (Critical Low SOC)";
       const remainingDeficit = demand - (totalRenewables + pGen);
@@ -193,11 +190,10 @@ export default function JudgesSimulation() {
   const netBalance = Number((totalRenewables + pGen - demand).toFixed(1));
   const autonomousRunway = Number((Math.max(0, batterySoc - 20.0) * 4.0 / Math.max(1.0, demand)).toFixed(1));
 
-  // Simulation Clock Tick
+  // Simulation Clock Tick (No Window Scrolling)
   useEffect(() => {
     if (!isRunning) return;
     const interval = setInterval(() => {
-      // Periodic AI decisions logged
       if (isTurbineFeathered) {
         addLog("SAFETY", `[INTERLOCK] Gusts (${windGust.toFixed(1)} m/s) >= 28 m/s cutoff! Turbines feathered to prevent blade fracture.`, "#ef4444");
       }
@@ -214,8 +210,11 @@ export default function JudgesSimulation() {
     return () => clearInterval(interval);
   }, [isRunning, simSpeed, isTurbineFeathered, pGen, isVibrationCritical, battFlow]);
 
+  // Scroll ONLY the internal terminal box, NOT the whole browser window!
   useEffect(() => {
-    logEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (terminalRef.current) {
+      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+    }
   }, [auditLog]);
 
   return (
@@ -522,7 +521,7 @@ export default function JudgesSimulation() {
             </div>
           </Card>
 
-          {/* Live Cyber-Physical Decision Audit Terminal */}
+          {/* Live Cyber-Physical Decision Audit Terminal (Internal Scroll Locked) */}
           <Card className="border-slate-800 bg-slate-950 font-mono">
             <div className="px-4 py-2.5 bg-slate-900 border-b border-slate-800 flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -536,7 +535,8 @@ export default function JudgesSimulation() {
                 Clear Stream
               </button>
             </div>
-            <div className="p-4 h-60 overflow-y-auto space-y-1.5 text-xs">
+            {/* Attached ref={terminalRef} directly to the scrollable div */}
+            <div ref={terminalRef} className="p-4 h-60 overflow-y-auto space-y-1.5 text-xs">
               {auditLog.length === 0 ? (
                 <p className="text-slate-400 text-center py-8 italic font-sans">Simulating closed-loop SCADA stream... Click scenarios or move sliders above.</p>
               ) : (
@@ -553,7 +553,6 @@ export default function JudgesSimulation() {
                   </div>
                 ))
               )}
-              <div ref={logEndRef} />
             </div>
           </Card>
         </div>
