@@ -1,0 +1,12 @@
+{
+  "solar_r2": 0.998,
+  "wind_r2": 0.998,
+  "training_samples": 3456,
+  "features": [
+    "hour",
+    "month",
+    "irradiance",
+    "wind_speed",
+    "outside_temp"
+  ]
+}

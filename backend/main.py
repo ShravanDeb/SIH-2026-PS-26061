@@ -7,10 +7,10 @@ from pydantic import BaseModel
 
 from .database import init_db, get_db, log_event
 from .siaps_ai.core import siaps_ai_core
+from .siaps_ai.recommendations import siaps_recommendations
+from .siaps_ai.approval_engine import approval_engine
 from .llm.client import llm_service
 from .orchestrator.agent import mission_agent
-from .recommendations import recommendation_engine
-from .approval_engine import approval_engine
 
 app = FastAPI(
     title="SIAPS Mission Control Platform",
@@ -95,7 +95,7 @@ def get_recommendations():
         "battery_soc": state["power"]["battery"]["soc"],
         "net_balance": state["power"]["netBalance"]
     }
-    return recommendation_engine.generate_recommendations(telemetry, state["weather"])
+    return siaps_recommendations.evaluate_recommendations(telemetry, state["weather"])
 
 @app.post("/api/recommendations/{rec_id}/action")
 def resolve_recommendation(rec_id: str, payload: ActionRequest):
