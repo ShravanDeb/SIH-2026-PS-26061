@@ -1,0 +1,279 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+/* ─── Design tokens ──────────────────────────────────────────────────────── */
+:root {
+  /* Light mode — warm off-white, crisp contrast */
+  --bg:            #F2F1EE;
+  --surface:       #FFFFFF;
+  --surface-2:     #F7F6F3;
+  --border:        #E4E2DC;
+  --border-2:      #CBC8C0;
+  --text-1:        #0F0F14;
+  --text-2:        #4E4D5C;
+  --text-3:        #9290A2;
+
+  /* Indigo accent */
+  --blue:          #4F46E5;
+  --blue-bg:       #EEF2FF;
+  --blue-border:   #C7D2FE;
+
+  --green:         #059669;
+  --green-bg:      #ECFDF5;
+  --green-border:  #A7F3D0;
+
+  --amber:         #D97706;
+  --amber-bg:      #FFFBEB;
+  --amber-border:  #FDE68A;
+
+  --red:           #DC2626;
+  --red-bg:        #FEF2F2;
+  --red-border:    #FECACA;
+
+  /* Sidebar — deep charcoal, not navy */
+  --sidebar:       #111114;
+  --sidebar-2:     #18181D;
+  --sidebar-border:#252530;
+  --sidebar-text:  #666878;
+  --sidebar-accent:#A5B4FC;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background: var(--bg);
+}
+
+* {
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-feature-settings: 'tnum' 1, 'zero' 1;
+}
+
+/* ─── Global micro-interaction utilities ─────────────────────────────────── */
+.btn-press {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+.btn-press:active {
+  transform: scale(0.96) !important;
+  opacity: 0.88;
+}
+.card-hover {
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.22s ease;
+}
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.09);
+}
+.nav-item-t {
+  transition: background 0.13s ease, color 0.13s ease, transform 0.11s ease;
+}
+.nav-item-t:hover  { transform: translateX(2px); }
+.nav-item-t:active { transform: translateX(1px) scale(0.98); }
+
+/* ─── Staggered entrance ─────────────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeSlideRight {
+  from { opacity: 0; transform: translateX(-14px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.93); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.anim-in       { animation: fadeSlideUp   0.42s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-in-right { animation: fadeSlideRight 0.42s cubic-bezier(0.22,1,0.36,1) both; }
+.anim-scale-in { animation: scaleIn       0.32s cubic-bezier(0.22,1,0.36,1) both; }
+.delay-0 { animation-delay: 0s; }
+.delay-1 { animation-delay: 0.06s; }
+.delay-2 { animation-delay: 0.12s; }
+.delay-3 { animation-delay: 0.18s; }
+.delay-4 { animation-delay: 0.24s; }
+.delay-5 { animation-delay: 0.30s; }
+.delay-6 { animation-delay: 0.38s; }
+
+/* ─── Aurora blobs (login background) ───────────────────────────────────── */
+@keyframes aurora-1 {
+  0%,100% { transform: translate(0,0) scale(1);       opacity:.7; }
+  25%     { transform: translate(60px,-40px) scale(1.2); opacity:.9; }
+  50%     { transform: translate(30px,60px) scale(.85); opacity:.6; }
+  75%     { transform: translate(-50px,20px) scale(1.1); opacity:.8; }
+}
+@keyframes aurora-2 {
+  0%,100% { transform: translate(0,0) scale(1);       opacity:.5; }
+  33%     { transform: translate(-70px,50px) scale(1.3); opacity:.75; }
+  66%     { transform: translate(50px,-60px) scale(.8); opacity:.55; }
+}
+@keyframes aurora-3 {
+  0%,100% { transform: translate(0,0) scale(1);       opacity:.6; }
+  40%     { transform: translate(90px,30px) scale(1.15); opacity:.45; }
+  80%     { transform: translate(-30px,-70px) scale(1.05); opacity:.7; }
+}
+.aurora-blob-1 {
+  position:absolute; width:700px; height:600px;
+  background:radial-gradient(ellipse, rgba(99,102,241,.20) 0%, transparent 65%);
+  top:-150px; left:-100px; filter:blur(80px);
+  animation: aurora-1 22s ease-in-out infinite; pointer-events:none;
+}
+.aurora-blob-2 {
+  position:absolute; width:600px; height:500px;
+  background:radial-gradient(ellipse, rgba(139,92,246,.15) 0%, transparent 65%);
+  bottom:-100px; right:-80px; filter:blur(90px);
+  animation: aurora-2 28s ease-in-out infinite; pointer-events:none;
+}
+.aurora-blob-3 {
+  position:absolute; width:500px; height:450px;
+  background:radial-gradient(ellipse, rgba(59,130,246,.12) 0%, transparent 65%);
+  top:40%; left:30%; filter:blur(100px);
+  animation: aurora-3 18s ease-in-out infinite; pointer-events:none;
+}
+
+/* ─── Ping animation for status dots ────────────────────────────────────── */
+@keyframes ping {
+  75%, 100% { transform: scale(2); opacity: 0; }
+}
+
+/* Scrollbars */
+* { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 2px; }
+
+/* Recharts */
+.recharts-tooltip-wrapper { outline: none !important; }
+.recharts-text { font-family: 'JetBrains Mono', monospace; }
+
+/* ── Page scaffold — inner pages get the same warm bg ──────────────────── */
+.page-wrap {
+  padding: 24px 28px 40px;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+.page-title {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+}
+.page-subtitle {
+  font-size: 13px;
+  color: var(--text-3);
+  margin-top: 4px;
+}
+
+/* ── Harmonise older pages that still use slate Tailwind classes ─────────
+   These overrides bring the inner pages into the same warm palette without
+   rewriting all 18 page files. They are low-specificity and do not touch
+   the Tailwind layer itself.                                               */
+.bg-white  { background-color: var(--surface) !important; }
+.bg-slate-50 { background-color: var(--surface-2) !important; }
+.bg-slate-100 { background-color: var(--bg) !important; }
+
+.border-slate-200 { border-color: var(--border) !important; }
+.border-slate-100 { border-color: var(--border) !important; }
+
+.text-slate-900 { color: var(--text-1) !important; }
+.text-slate-800 { color: var(--text-1) !important; }
+.text-slate-700 { color: var(--text-2) !important; }
+.text-slate-600 { color: var(--text-2) !important; }
+.text-slate-500 { color: var(--text-3) !important; }
+.text-slate-400 { color: var(--text-3) !important; }
+.text-slate-300 { color: var(--border-2) !important; }
+
+/* ── Responsive overrides for inner pages ───────────────────────────────── */
+@media (max-width: 767px) {
+  /* Collapse common Tailwind grid patterns */
+  .grid-cols-2,
+  .lg\:grid-cols-2,
+  .grid-cols-3,
+  .lg\:grid-cols-3,
+  .grid-cols-4,
+  .lg\:grid-cols-4,
+  .sm\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Tighten page padding */
+  .p-6  { padding: 14px !important; }
+  .p-5  { padding: 12px !important; }
+  .px-6 { padding-left: 14px !important; padding-right: 14px !important; }
+  .px-5 { padding-left: 12px !important; padding-right: 12px !important; }
+
+  /* Make space-y stacks tighter */
+  .space-y-5 > * + * { margin-top: 12px !important; }
+  .space-y-6 > * + * { margin-top: 14px !important; }
+
+  /* Prevent horizontal overflow */
+  .overflow-x-auto { overflow-x: auto !important; }
+
+  /* Recharts: prevent chart overflow on small screens */
+  .recharts-wrapper { max-width: 100% !important; }
+}
+
+@media (max-width: 1023px) {
+  /* 4-col grids → 2-col on tablet */
+  .lg\:grid-cols-4 { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ── Dark mode — warm neutral charcoal (Linear/Raycast style, not navy) ─── */
+[data-theme="dark"] {
+  --bg:            #18191D;
+  --surface:       #202127;
+  --surface-2:     #28292F;
+  --border:        #34363F;
+  --border-2:      #44464F;
+  --text-1:        #ECEEF2;
+  --text-2:        #9698A6;
+  --text-3:        #565A68;
+
+  /* Soft indigo — reads as warm & premium on neutral dark, not clinical */
+  --blue:          #A5B4FC;
+  --blue-bg:       rgba(165,180,252,.10);
+  --blue-border:   rgba(165,180,252,.22);
+
+  --green:         #4ADE80;
+  --green-bg:      rgba(74,222,128,.09);
+  --green-border:  rgba(74,222,128,.22);
+
+  --amber:         #FBB740;
+  --amber-bg:      rgba(251,183,64,.09);
+  --amber-border:  rgba(251,183,64,.24);
+
+  --red:           #F87171;
+  --red-bg:        rgba(248,113,113,.09);
+  --red-border:    rgba(248,113,113,.24);
+
+  /* Sidebar — just a touch darker than bg, warm neutral not navy */
+  --sidebar:       #111215;
+  --sidebar-2:     #191B1F;
+  --sidebar-border:#282A32;
+  --sidebar-text:  #636678;
+  --sidebar-accent:#A5B4FC;
+}
+
+[data-theme="dark"] .bg-white        { background-color: var(--surface)   !important; }
+[data-theme="dark"] .bg-slate-50     { background-color: var(--surface-2) !important; }
+[data-theme="dark"] .bg-slate-100    { background-color: var(--bg)        !important; }
+[data-theme="dark"] .border-slate-200 { border-color: var(--border)      !important; }
+[data-theme="dark"] .bg-slate-900    { background-color: #191B1F          !important; }
+
+/* ── Spinner ──────────────────────────────────────────────────────────────── */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Page transition ─────────────────────────────────────────────────────── */
+.page-enter {
+  animation: pageFadeIn 0.18s ease;
+}
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

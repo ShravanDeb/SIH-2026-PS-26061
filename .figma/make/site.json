@@ -1,0 +1,10 @@
+{
+  "description": "This web dashboard empowers polar research facilities to monitor and manage energy systems, equipment health, and safety, providing actionable AI-driven insights for efficient operations.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
