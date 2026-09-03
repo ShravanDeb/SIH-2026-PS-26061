@@ -77,9 +77,51 @@ export function useLiveStationTelemetry() {
 
     connect();
 
+    // 1 Hz Active Telemetry Heartbeat
+    const tickInterval = setInterval(() => {
+      setState(prev => {
+        const nowUtc = new Date().toUTCString().slice(17, 25) + " UTC";
+        if (prev.isBackendConnected) {
+          return { ...prev, timestamp: nowUtc };
+        }
+
+        // Realistic live cyber-physical simulation tick when offline
+        const windNoise = (Math.random() - 0.5) * 0.4;
+        const currentWind = Math.max(3.0, Math.min(24.0, Number((prev.weather.windSpeed + windNoise).toFixed(1))));
+        const solarNoise = (Math.random() - 0.5) * 0.3;
+        const currentSolar = Math.max(0.0, Number((prev.power.solar.output + solarNoise).toFixed(1)));
+        const currentWindPwr = Math.max(0.0, Number((prev.power.wind.output + windNoise * 1.8).toFixed(1)));
+        const totalGen = Number((currentSolar + currentWindPwr).toFixed(1));
+        const totalCon = prev.power.totalConsumption;
+        const net = Number((totalGen - totalCon).toFixed(1));
+
+        return {
+          ...prev,
+          timestamp: nowUtc,
+          power: {
+            ...prev.power,
+            solar: { ...prev.power.solar, output: currentSolar },
+            wind: { ...prev.power.wind, output: currentWindPwr, speed: currentWind },
+            totalGeneration: totalGen,
+            netBalance: net,
+            battery: {
+              ...prev.power.battery,
+              power: net,
+              status: net >= 0 ? "charging" : "discharging",
+            }
+          },
+          weather: {
+            ...prev.weather,
+            windSpeed: currentWind,
+          }
+        };
+      });
+    }, 1000);
+
     return () => {
       if (ws) ws.close();
       if (reconnectTimer) clearTimeout(reconnectTimer);
+      clearInterval(tickInterval);
     };
   }, []);
 
