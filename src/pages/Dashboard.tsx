@@ -322,7 +322,10 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
                     </div>
                   </div>
                   <div style={{ flex: 1 }}>
-                    <StatusBadge status="charging" />
+                    <StatusBadge
+                      status={b.status as any}
+                      label={`${b.status.toUpperCase()} (${power.netBalance >= 0 ? "+" : ""}${power.netBalance.toFixed(1)} kW)`}
+                    />
                     <div style={{ marginTop: 10, display: "flex", flexDirection: "column", gap: 6 }}>
                       {[
                         { l: "Available", v: `${b.remaining} kWh` },
@@ -356,13 +359,18 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
                         <span style={{ fontSize: 10, color: "var(--text-3)", marginTop: 3 }}>State of Charge</span>
                       </div>
                     </div>
-                    <div style={{ marginTop: 12 }}><StatusBadge status="charging" /></div>
+                    <div style={{ marginTop: 12 }}>
+                      <StatusBadge
+                        status={b.status as any}
+                        label={`${b.status.toUpperCase()} (${power.netBalance >= 0 ? "+" : ""}${power.netBalance.toFixed(1)} kW)`}
+                      />
+                    </div>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                     {[
                       { label: "Available energy", value: `${b.remaining} kWh` },
                       { label: "Estimated runtime", value: `${b.runtime} h` },
-                      { label: "Voltage / Current", value: `${b.voltage} V · ${Math.abs(b.current)} A` },
+                      { label: "Voltage / Current", value: `${b.voltage} V · ${power.netBalance >= 0 ? "+" : "-"}${Math.abs(b.current)} A` },
                       { label: "Cell temperature",  value: `${b.temperature} °C` },
                       { label: "Pack health",        value: `${b.health}%` },
                     ].map(row => (

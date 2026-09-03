@@ -107,7 +107,8 @@ export function useLiveStationTelemetry() {
             battery: {
               ...prev.power.battery,
               power: net,
-              status: net >= 0 ? "charging" : "discharging",
+              current: Number(((net * 1000) / Math.max(1, prev.power.battery.voltage)).toFixed(1)),
+              status: net >= 0.1 ? "charging" : net <= -0.1 ? "discharging" : "standby",
             }
           },
           weather: {

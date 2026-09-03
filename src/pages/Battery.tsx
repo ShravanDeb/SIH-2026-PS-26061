@@ -34,9 +34,9 @@ export default function Battery() {
           subtitle="State of charge % with reference lines for critical and target thresholds"
           icon={<BatteryIcon size={14} />}
           action={
-            <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-semibold">
+            <div className={`flex items-center gap-1.5 text-xs font-semibold ${b.status === "charging" ? "text-emerald-600" : "text-amber-600"}`}>
               <TrendingUp size={12} />
-              Charging to 90% target
+              {b.status === "charging" ? "Charging to 90% target" : "Discharging to station loads"}
             </div>
           }
         />
@@ -68,8 +68,8 @@ export default function Battery() {
           <div className="p-5 grid grid-cols-2 gap-3">
             {[
               { l: "Pack Voltage",     v: `${b.voltage} V`,       sub: "Nominal 51.2 V" },
-              { l: "Charge Current",   v: `${Math.abs(b.current)} A`, sub: "Incoming (charging)" },
-              { l: "Charge Power",     v: `${Math.abs(b.power).toFixed(1)} kW`, sub: "0.006C rate — optimal" },
+              { l: "BMS Current",      v: `${power.netBalance >= 0 ? "+" : "-"}${Math.abs(b.current)} A`, sub: b.status === "charging" ? "Incoming (charging)" : "Supplying loads (discharging)" },
+              { l: "Net Battery Flow", v: `${power.netBalance >= 0 ? "+" : ""}${power.netBalance.toFixed(1)} kW`, sub: b.status === "charging" ? "Surplus renewable absorption" : "Bridging generation deficit" },
               { l: "Nominal Capacity", v: `${b.capacity} kWh`,    sub: "Design spec" },
               { l: "Cell Balance",     v: "±12 mV",               sub: "Within ±20 mV spec" },
               { l: "Cycle Count",      v: "847 cycles",           sub: "LiFePO₄ lifetime ~4000" },
@@ -86,11 +86,14 @@ export default function Battery() {
         <Card>
           <CardHeader title="Health & Degradation Analysis" />
           <div className="p-5 space-y-4">
-            <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 mb-2">
-              <p className="text-xs font-bold text-emerald-700 mb-1">AI Charging Forecast</p>
-              <p className="text-xs text-emerald-700 leading-relaxed">
-                Pre-storm charging cycle active. Target: 90% SOC by 11:30 UTC. At current +2.3 kW charge rate,
-                remaining charge time ≈ 2h 10min. Projected autonomous runtime at 90% SOC: 19.8h.
+            <div className={b.status === "charging" ? "bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 mb-2" : "bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 mb-2"}>
+              <p className={`text-xs font-bold ${b.status === "charging" ? "text-emerald-700" : "text-amber-700"} mb-1`}>
+                {b.status === "charging" ? "AI Battery Optimization · Charging Active" : "AI Autonomous Dispatch · Battery Discharging"}
+              </p>
+              <p className={`text-xs ${b.status === "charging" ? "text-emerald-700" : "text-amber-700"} leading-relaxed`}>
+                {b.status === "charging"
+                  ? `Renewable generation surplus (${power.netBalance >= 0 ? "+" : ""}${power.netBalance.toFixed(1)} kW) is actively replenishing LiFePO₄ storage. Projected runway at 90% SOC target: 19.8 hours.`
+                  : `LiFePO₄ storage is actively supplying ${Math.abs(power.netBalance).toFixed(1)} kW to station loads. Current autonomous runtime remaining: ${b.runtime} hours down to the 20% safety floor.`}
               </p>
             </div>
             <HealthBar value={b.health} label="Overall Health" />

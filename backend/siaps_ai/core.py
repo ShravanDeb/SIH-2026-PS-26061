@@ -105,12 +105,13 @@ class SiapsAiCore:
                 "battery": {
                     "soc": batt_state["soc"],
                     "voltage": batt_state["voltage"],
-                    "power": batt_state["power"],
+                    "power": round(dispatch["batt_net_power"], 1),
+                    "current": round((dispatch["batt_net_power"] * 1000.0) / max(1.0, batt_state["voltage"]), 1),
                     "temperature": batt_state["temperature"],
                     "capacity": self.digital_twin.battery_capacity,
                     "remaining": batt_state["remaining_kwh"],
                     "runtime": round(batt_state["usable_kwh"] / max(1.0, total_demand), 1),
-                    "status": "charging" if batt_state["power"] > 0.5 else ("discharging" if batt_state["power"] < -0.5 else "standby"),
+                    "status": "charging" if dispatch["batt_net_power"] > 0.1 else ("discharging" if dispatch["batt_net_power"] < -0.1 else "standby"),
                     "health": 96
                 },
                 "totalGeneration": dispatch["p_renewables"] + dispatch["gen_output"],

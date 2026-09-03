@@ -16,8 +16,8 @@ export const powerData = {
   battery: {
     soc: 78,
     voltage: 54.2,
-    current: -42.3,
-    power: -2.3,
+    current: 42.4,
+    power: 2.3,
     health: 96,
     temperature: 18.4,
     capacity: 400,
