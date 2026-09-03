@@ -21,3 +21,5 @@ logs/
 desktop.ini
 *.db
 *.sqlite
+__pycache__/
+*.pyc
