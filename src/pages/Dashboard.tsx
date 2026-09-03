@@ -90,6 +90,54 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
   return (
     <div style={{ padding: isMobile ? "14px 0 40px" : "32px 0 56px", maxWidth: 1280, margin: "0 auto" }}>
 
+      {/* ── Judges Demo Banner ── */}
+      <div style={{ padding: `0 ${px}px`, marginBottom: 16 }}>
+        <div
+          onClick={() => onNavigate("simulation")}
+          style={{
+            background: "linear-gradient(90deg, rgba(14, 165, 233, 0.15), rgba(99, 102, 241, 0.15))",
+            border: "1px solid rgba(56, 189, 248, 0.35)",
+            borderRadius: 12,
+            padding: "12px 18px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            cursor: "pointer",
+            transition: "all 0.2s",
+            boxShadow: "0 4px 20px rgba(14, 165, 233, 0.1)"
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.borderColor = "#38bdf8";
+            e.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.borderColor = "rgba(56, 189, 248, 0.35)";
+            e.currentTarget.style.transform = "translateY(0)";
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <span style={{ fontSize: 18 }}>❄️</span>
+            <div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 13, fontWeight: 800, color: "var(--text-1)" }}>
+                  Judges Live Simulation: How SIAPS AI Controls Polar Stations
+                </span>
+                <span style={{ fontSize: 9, fontWeight: 800, textTransform: "uppercase", background: "#38bdf8", color: "#080e1a", padding: "2px 6px", borderRadius: 4 }}>
+                  LIVE DEMO
+                </span>
+              </div>
+              <p style={{ fontSize: 11, color: "var(--text-3)", margin: "2px 0 0" }}>
+                Simulate 31.4 m/s severe blizzards, 4-month polar night, turbine vibration anomalies, and watch closed-loop cyber-physical control in action.
+              </p>
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 700, color: "#38bdf8" }}>
+            <span>Launch Simulation</span>
+            <ChevronRight size={14} />
+          </div>
+        </div>
+      </div>
+
       {/* ── Page header ──────────────────────────────────────────────────── */}
       <div style={{ padding: `0 ${px}px`, marginBottom: isMobile ? 16 : 28, display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
         <div>

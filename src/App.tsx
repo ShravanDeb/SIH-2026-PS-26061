@@ -21,6 +21,7 @@ import Analytics from "./pages/Analytics";
 import Logs from "./pages/Logs";
 import Communication from "./pages/Communication";
 import Settings from "./pages/Settings";
+import JudgesSimulation from "./pages/JudgesSimulation";
 import Login from "./pages/Login";
 import { approvalQueue } from "./data/mockData";
 import { Search, Moon, Sun as SunIcon, Bell, Menu, X } from "lucide-react";
@@ -92,6 +93,7 @@ function Shell({ user, onLogout }: { user: StationUser; onLogout: () => void }) 
   const renderScreen = () => {
     switch (screen) {
       case "dashboard":   return <Dashboard onNavigate={navigate} />;
+      case "simulation":  return <JudgesSimulation />;
       case "energy":      return <EnergyManagement />;
       case "solar":       return <Solar />;
       case "wind":        return <Wind />;

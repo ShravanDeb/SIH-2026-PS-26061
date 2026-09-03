@@ -1,13 +1,13 @@
 import {
   Activity, BarChart2, Battery, Zap, Bot, CheckSquare, Flame,
   GitBranch, Layout, Layers, Radio, Settings, Shield, Sun,
-  Thermometer, Wrench, Wind, Globe, ChevronLeft, ChevronRight,
+  Thermometer, Wrench, Wind, Globe, ChevronLeft, ChevronRight, Cpu, Sparkles
 } from "lucide-react";
 import { weatherData, powerData } from "../data/mockData";
 import { haptic } from "../utils/haptic";
 
 export type Screen =
-  | "dashboard" | "energy" | "solar" | "wind" | "battery" | "generator"
+  | "dashboard" | "simulation" | "energy" | "solar" | "wind" | "battery" | "generator"
   | "loads" | "weather" | "equipment" | "maintenance" | "ai" | "approval"
   | "safety" | "twin" | "analytics" | "logs" | "comm" | "settings";
 
@@ -17,8 +17,9 @@ const NAV: { group: string; items: NavItem[] }[] = [
   {
     group: "Overview",
     items: [
-      { id: "dashboard", label: "Main Dashboard",    icon: Layout },
-      { id: "energy",    label: "Energy Management", icon: Zap },
+      { id: "dashboard",  label: "Main Dashboard",     icon: Layout },
+      { id: "simulation", label: "Judges AI Demo",     icon: Sparkles },
+      { id: "energy",     label: "Energy Management",  icon: Zap },
     ],
   },
   {
