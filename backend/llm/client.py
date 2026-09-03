@@ -4,7 +4,7 @@ import requests
 from typing import Dict, Any, Optional
 
 OLLAMA_API_URL = os.environ.get("OLLAMA_API_URL", "http://localhost:11434/api/generate")
-OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "siaps-assistant")
+OLLAMA_MODEL = os.environ.get("OLLAMA_MODEL", "llama3.2:1b")
 
 class LlmService:
     """
