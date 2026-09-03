@@ -1,6 +1,6 @@
-import { Sun, Wind, Battery, Flame, Zap, Cloud, ArrowDown, CheckCircle, AlertTriangle } from "lucide-react";
-import { powerData, weatherData } from "../data/mockData";
+import { Sun, Wind, Battery, Flame, Zap, Cloud, ArrowDown, CheckCircle, AlertTriangle, Cpu } from "lucide-react";
 import { Card, CardHeader, HealthBar, StatRow, PageHeader } from "../components/ui";
+import { useLiveStationTelemetry } from "../services/stationApi";
 
 type BlockStatus = "ok" | "warn" | "off";
 
@@ -58,15 +58,16 @@ function FlowArrow({ label }: { label: string }) {
 }
 
 export default function DigitalTwin() {
+  const { power, weather, isBackendConnected } = useLiveStationTelemetry();
   return (
     <div className="p-6 max-w-screen-xl mx-auto space-y-5">
       <PageHeader
         title="Digital Twin"
-        subtitle="Real-time synchronized system model — station state updated every 10 seconds"
+        subtitle="SIAPS AI Real-Time Synchronized Cyber-Physical Microgrid Simulation"
         badge={
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-semibold text-emerald-700">
             <CheckCircle size={12} />
-            Live · 99.1% accuracy
+            {isBackendConnected ? "Live SCADA (1 Hz) · Connected" : "Autonomous Simulation Active"}
           </div>
         }
       />
@@ -83,10 +84,10 @@ export default function DigitalTwin() {
               status="ok"
               accentColor="#f59e0b"
               metrics={[
-                { label: "Output",     value: `${powerData.solar.output} kW` },
-                { label: "Capacity",   value: `${powerData.solar.capacity} kW` },
-                { label: "Irradiance", value: `${powerData.solar.irradiance} W/m²` },
-                { label: "Health",     value: "94%" },
+                { label: "Output",     value: `${power.solar.output} kW` },
+                { label: "Capacity",   value: `${power.solar.capacity} kW` },
+                { label: "Irradiance", value: `${weather.solarRadiation} W/m²` },
+                { label: "ML Model",   value: "Trained Regressor" },
               ]}
             />
             <SystemBlock
@@ -95,47 +96,46 @@ export default function DigitalTwin() {
               status="warn"
               accentColor="#38bdf8"
               metrics={[
-                { label: "Output",    value: `${powerData.wind.output} kW` },
-                { label: "Wind",      value: `${weatherData.windSpeed} m/s` },
+                { label: "Output",    value: `${power.wind.output} kW` },
+                { label: "Wind",      value: `${weather.windSpeed} m/s` },
                 { label: "T-1 health", value: "98%" },
-                { label: "T-2 health", value: "89% ⚠", warn: true },
+                { label: "T-2 health", value: "89% (Bearing RMS 0.72)", warn: true },
               ]}
             />
             <SystemBlock
               title="Generator G-1"
               icon={<Flame size={16} />}
-              status="off"
+              status={power.generator.output > 0 ? "ok" : "off"}
               accentColor="#94a3b8"
               metrics={[
-                { label: "State",  value: "Cold standby" },
-                { label: "Fuel",   value: `${powerData.generator.fuel}%` },
-                { label: "Health", value: "94%" },
-                { label: "Start",  value: "~45s" },
+                { label: "State",     value: power.generator.output > 0 ? `Active (${power.generator.output} kW)` : "Warm-standby" },
+                { label: "Capacity",  value: "80.0 kW" },
+                { label: "Fuel level",value: "87% (Diesel)" },
+                { label: "Response",  value: "8s rapid start" },
               ]}
             />
           </div>
 
-          <FlowArrow label="49.6 kW total generation" />
+          <FlowArrow label={`${power.totalGeneration.toFixed(1)} kW TOTAL GENERATED`} />
 
           {/* Tier 2: Storage */}
-          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center mb-3">Storage</p>
-          <div className="max-w-sm mx-auto mb-2">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center mb-3">Energy Storage</p>
+          <div className="max-w-md mx-auto mb-2">
             <SystemBlock
-              title="Battery Bank (Racks 1–4)"
+              title="LiFePO₄ Battery Storage"
               icon={<Battery size={16} />}
               status="ok"
               accentColor="#10b981"
               metrics={[
-                { label: "SOC",       value: `${powerData.battery.soc}%` },
-                { label: "Available", value: `${powerData.battery.remaining} kWh` },
-                { label: "Runtime",   value: `${powerData.battery.runtime}h` },
-                { label: "Health",    value: `${powerData.battery.health}%` },
-                { label: "Status",    value: "Charging +2.3 kW" },
+                { label: "State of Charge", value: `${power.battery.soc}% (${power.battery.remaining} kWh)` },
+                { label: "Flow Rate",       value: `${power.netBalance >= 0 ? "+" : ""}${power.netBalance.toFixed(1)} kW (${power.battery.status})` },
+                { label: "Voltage",         value: `${power.battery.voltage} V` },
+                { label: "Temperature",     value: `${power.battery.temperature}°C (Optimal)` },
               ]}
             />
           </div>
 
-          <FlowArrow label="47.3 kW to station loads" />
+          <FlowArrow label={`${power.totalConsumption.toFixed(1)} kW TO DEMAND`} />
 
           {/* Tier 3: Loads */}
           <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest text-center mb-3">Station Loads</p>
@@ -167,11 +167,11 @@ export default function DigitalTwin() {
                 status="ok"
                 accentColor="#64748b"
                 metrics={[
-                  { label: "Temperature",  value: `${weatherData.temperature}°C (feels ${weatherData.feelsLike}°C)` },
-                  { label: "Wind",         value: `${weatherData.windSpeed} m/s ${weatherData.windDirection} · Gusts ${weatherData.windGust} m/s` },
-                  { label: "Irradiance",   value: `${weatherData.solarRadiation} W/m²` },
-                  { label: "Visibility",   value: `${weatherData.visibility} km` },
-                  { label: "Forecast",     value: "⚠ Blizzard Fri–Sat — pre-storm actions pending approval", warn: true },
+                  { label: "Temperature",  value: `${weather.temperature}°C (feels ${weather.feelsLike}°C)` },
+                  { label: "Wind",         value: `${weather.windSpeed} m/s ${weather.windDirection} · Gusts ${weather.windGust} m/s` },
+                  { label: "Irradiance",   value: `${weather.solarRadiation} W/m²` },
+                  { label: "Visibility",   value: `${weather.visibility} km` },
+                  { label: "Forecast",     value: weather.windGust >= 20 ? "⚠ High wind advisory — pre-storm actions active" : "Nominal polar conditions", warn: weather.windGust >= 20 },
                 ]}
               />
             </div>

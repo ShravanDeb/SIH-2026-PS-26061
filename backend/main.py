@@ -89,13 +89,18 @@ def operator_chat(payload: ChatRequest):
 
 @app.get("/api/recommendations")
 def get_recommendations():
-    """Generates explainable operational recommendations."""
+    """Generates dynamic operational recommendations from SIAPS AI Core."""
     state = siaps_ai_core.step()
     telemetry = {
         "battery_soc": state["power"]["battery"]["soc"],
-        "net_balance": state["power"]["netBalance"]
+        "net_balance": state["power"]["netBalance"],
+        "total_consumption": state["power"]["totalConsumption"]
     }
-    return siaps_recommendations.evaluate_recommendations(telemetry, state["weather"])
+    return siaps_recommendations.evaluate_recommendations(
+        telemetry=telemetry,
+        weather=state["weather"],
+        equipment_health=state.get("equipment")
+    )
 
 @app.post("/api/recommendations/{rec_id}/action")
 def resolve_recommendation(rec_id: str, payload: ActionRequest):

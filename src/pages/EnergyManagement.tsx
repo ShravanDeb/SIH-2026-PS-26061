@@ -2,33 +2,43 @@ import {
   AreaChart, Area, BarChart, Bar, LineChart, Line, XAxis, YAxis,
   CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine,
 } from "recharts";
-import { Sun, Wind, Battery, Flame, ArrowRight, Zap, TrendingUp } from "lucide-react";
-import { powerData, loadsData, generateTimeSeriesData } from "../data/mockData";
+import { Sun, Wind, Battery, Flame, ArrowRight, Zap, TrendingUp, Cpu } from "lucide-react";
+import { loadsData, generateTimeSeriesData } from "../data/mockData";
 import { Card, CardHeader, HealthBar, StatCard, StatRow } from "../components/ui";
+import { useLiveStationTelemetry } from "../services/stationApi";
 
 const timeData = generateTimeSeriesData(24);
 
 export default function EnergyManagement() {
-  const surplus = (powerData.totalGeneration - powerData.totalConsumption).toFixed(1);
+  const { power, isBackendConnected } = useLiveStationTelemetry();
+  const surplus = power.netBalance >= 0 ? `+${power.netBalance.toFixed(1)}` : `${power.netBalance.toFixed(1)}`;
   return (
     <div className="p-6 max-w-screen-2xl mx-auto space-y-5">
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-slate-900 tracking-tight">Energy Management</h1>
-          <p className="text-sm text-slate-500 mt-1">Complete power overview — real-time, historical, and forecast</p>
+          <p className="text-sm text-slate-500 mt-1">SIAPS AI Autonomous Power Flow & Microgrid Dispatch</p>
         </div>
-        <div className="px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg text-xs font-semibold text-emerald-700 flex items-center gap-1.5">
-          <TrendingUp size={12} />
-          Surplus +{surplus} kW → battery charging
+        <div className="flex items-center gap-2">
+          {isBackendConnected && (
+            <div className="px-2.5 py-1 bg-emerald-50 border border-emerald-300 rounded-lg text-xs font-bold text-emerald-700 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              SIAPS AI Active
+            </div>
+          )}
+          <div className="px-3 py-1.5 bg-sky-50 border border-sky-200 rounded-lg text-xs font-semibold text-sky-700 flex items-center gap-1.5">
+            <TrendingUp size={12} />
+            Net Balance {surplus} kW
+          </div>
         </div>
       </div>
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard label="Solar Output"    value={powerData.solar.output}     unit="kW" sub={`${powerData.solar.capacity} kW capacity · 38% util.`}    color="#f59e0b" />
-        <StatCard label="Wind Output"     value={powerData.wind.output}      unit="kW" sub={`${powerData.wind.capacity} kW capacity · 52% util.`}     color="#38bdf8" />
-        <StatCard label="Total Renewable" value={powerData.totalGeneration}  unit="kW" sub="100% renewable share — generator idle"                    color="#10b981" />
-        <StatCard label="Net Balance"     value={`+${surplus}`}              unit="kW" sub="Surplus being stored in battery bank"                     color="#10b981" trend="up" />
+        <StatCard label="Solar Output"    value={power.solar.output}     unit="kW" sub={`${power.solar.capacity} kW capacity · ML regressor`} color="#f59e0b" />
+        <StatCard label="Wind Output"     value={power.wind.output}      unit="kW" sub={`${power.wind.capacity} kW capacity · Aerodynamic ML`} color="#38bdf8" />
+        <StatCard label="Total Renewable" value={power.totalGeneration}  unit="kW" sub={`${power.renewableContribution}% renewable share`} color="#10b981" />
+        <StatCard label="Net Balance"     value={surplus}                unit="kW" sub="Autonomous battery dispatch balance" color="#10b981" trend="up" />
       </div>
 
       {/* Power Flow */}
@@ -39,9 +49,9 @@ export default function EnergyManagement() {
             {/* Sources column */}
             <div className="flex flex-col gap-2.5">
               {[
-                { icon: Sun,   label: "Solar", value: powerData.solar.output,     color: "#f59e0b", bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700" },
-                { icon: Wind,  label: "Wind",  value: powerData.wind.output,      color: "#38bdf8", bg: "bg-sky-50",   border: "border-sky-200",   text: "text-sky-700" },
-                { icon: Flame, label: "Gen",   value: powerData.generator.output, color: "#94a3b8", bg: "bg-slate-50", border: "border-slate-200",  text: "text-slate-500" },
+                { icon: Sun,   label: "Solar", value: power.solar.output,     color: "#f59e0b", bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700" },
+                { icon: Wind,  label: "Wind",  value: power.wind.output,      color: "#38bdf8", bg: "bg-sky-50",   border: "border-sky-200",   text: "text-sky-700" },
+                { icon: Flame, label: "Gen",   value: power.generator.output, color: "#94a3b8", bg: "bg-slate-50", border: "border-slate-200",  text: "text-slate-500" },
               ].map(({ icon: Icon, label, value, color, bg, border, text }) => (
                 <div key={label} className={`flex items-center gap-3 ${bg} border ${border} rounded-xl px-4 py-3 w-44`}>
                   <Icon size={16} style={{ color }} />
@@ -57,22 +67,22 @@ export default function EnergyManagement() {
             <div className="flex flex-col items-center gap-1">
               <div className="h-px w-10 bg-slate-200" />
               <ArrowRight size={18} className="text-slate-400" />
-              <p className="text-xs font-mono text-slate-400">49.6 kW</p>
+              <p className="text-xs font-mono text-slate-400">{power.totalGeneration.toFixed(1)} kW</p>
             </div>
 
             {/* Battery */}
             <div className="bg-emerald-50 border-2 border-emerald-300 rounded-xl px-6 py-5 text-center w-36">
               <Battery size={20} className="text-emerald-600 mx-auto mb-2" />
               <p className="text-xs font-semibold text-emerald-700">Battery</p>
-              <p className="text-2xl font-bold font-mono text-emerald-800 mt-1">{powerData.battery.soc}%</p>
-              <p className="text-xs text-emerald-600 mt-1">+2.3 kW charging</p>
-              <p className="text-xs text-emerald-500 mt-0.5">{powerData.battery.remaining} kWh</p>
+              <p className="text-2xl font-bold font-mono text-emerald-800 mt-1">{power.battery.soc}%</p>
+              <p className="text-xs text-emerald-600 mt-1">{power.netBalance >= 0 ? `+${power.netBalance.toFixed(1)} kW charging` : `${power.netBalance.toFixed(1)} kW discharging`}</p>
+              <p className="text-xs text-emerald-500 mt-0.5">{power.battery.remaining} kWh</p>
             </div>
 
             {/* Arrow + total */}
             <div className="flex flex-col items-center gap-1">
               <ArrowRight size={18} className="text-slate-400" />
-              <p className="text-xs font-mono text-slate-400">47.3 kW</p>
+              <p className="text-xs font-mono text-slate-400">{power.totalConsumption.toFixed(1)} kW</p>
             </div>
 
             {/* Loads */}

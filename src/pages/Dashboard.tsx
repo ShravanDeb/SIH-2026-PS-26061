@@ -11,7 +11,6 @@ import {
 import { Card, CardHeader, StatusBadge, AlertItem, HealthBar, LevelBadge } from "../components/ui";
 import { useIsMobile, useIsTablet } from "../hooks/useWindowWidth";
 import { useLiveStationTelemetry, fetchLiveRecommendations, submitRecommendationAction } from "../services/stationApi";
-import AIChatDrawer from "../components/AIChatDrawer";
 
 const RANGES = [
   { label: "6h", hours: 6 }, { label: "12h", hours: 12 },
@@ -40,7 +39,6 @@ const ChartTip = ({ active, payload, label }: any) => {
 export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => void }) {
   const [range, setRange]       = useState(12);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [chatOpen, setChatOpen] = useState(false);
   const [recs, setRecs]         = useState<any[]>([]);
   const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const isMobile = useIsMobile();
@@ -501,38 +499,6 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
           </Card>
         </div>
       </div>
-
-      {/* Floating Ask SIAPS AI Button */}
-      <button
-        onClick={() => setChatOpen(true)}
-        style={{
-          position: "fixed",
-          bottom: 24,
-          right: 24,
-          background: "linear-gradient(135deg, #6366f1, #3b82f6)",
-          color: "#fff",
-          border: "none",
-          borderRadius: 30,
-          padding: "12px 20px",
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          boxShadow: "0 10px 25px rgba(99,102,241,0.4), 0 0 15px rgba(59,130,246,0.3)",
-          cursor: "pointer",
-          fontWeight: 700,
-          fontSize: 13,
-          zIndex: 999,
-          transition: "transform 0.15s, box-shadow 0.15s"
-        }}
-        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.04)"}
-        onMouseLeave={e => e.currentTarget.style.transform = "scale(1.0)"}
-      >
-        <Bot size={18} />
-        Ask SIAPS AI
-      </button>
-
-      {/* Floating AI Mission Copilot Drawer */}
-      <AIChatDrawer isOpen={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   );
 }

@@ -2,27 +2,29 @@ import {
   LineChart, Line, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip,
   ResponsiveContainer, ReferenceLine,
 } from "recharts";
-import { Battery as BatteryIcon, TrendingUp } from "lucide-react";
-import { powerData, generateTimeSeriesData } from "../data/mockData";
+import { Battery as BatteryIcon, TrendingUp, Cpu } from "lucide-react";
+import { generateTimeSeriesData } from "../data/mockData";
 import { Card, CardHeader, HealthBar, StatusBadge, StatCard, StatRow, PageHeader } from "../components/ui";
+import { useLiveStationTelemetry } from "../services/stationApi";
 
 const timeData = generateTimeSeriesData(24);
 
 export default function Battery() {
-  const b = powerData.battery;
+  const { power, isBackendConnected } = useLiveStationTelemetry();
+  const b = power.battery;
   return (
     <div className="p-6 max-w-screen-xl mx-auto space-y-5">
       <PageHeader
         title="Battery Storage"
         subtitle="Rack 1–4 · LiFePO₄ · 400 kWh nominal · BMS v3.2 · Bharati Antarctic Station"
-        badge={<StatusBadge status="charging" />}
+        badge={<StatusBadge status={b.status as any} label={`${b.status.toUpperCase()} (${power.netBalance >= 0 ? "+" : ""}${power.netBalance.toFixed(1)} kW)`} />}
       />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <StatCard label="State of Charge" value={`${b.soc}%`}        sub={`${b.remaining} kWh available`}         color="#10b981" trend="up"  />
-        <StatCard label="Est. Runtime"    value={`${b.runtime}h`}    sub="At current 47.3 kW consumption"                               />
-        <StatCard label="Battery Health"  value={`${b.health}%`}     sub={`Degradation ${b.degradation}% · optimal`} color="#10b981"             />
-        <StatCard label="Temperature"     value={`${b.temperature}°C`} sub="Rack avg · optimal range 15–25°C"                             />
+        <StatCard label="State of Charge" value={`${b.soc}%`}        sub={`${b.remaining} kWh available (${b.status})`} color="#10b981" trend="up"  />
+        <StatCard label="Est. Runtime"    value={`${b.runtime}h`}    sub={`At current ${power.totalConsumption.toFixed(1)} kW consumption`} />
+        <StatCard label="Battery Health"  value={`${b.health}%`}     sub="Cell degradation nominal (4%)" color="#10b981" />
+        <StatCard label="Temperature"     value={`${b.temperature}°C`} sub="Core thermal envelope: 15–25°C" />
       </div>
 
       {/* SOC history */}
