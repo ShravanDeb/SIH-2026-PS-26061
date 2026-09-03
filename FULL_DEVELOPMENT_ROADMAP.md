@@ -42,7 +42,7 @@ npm install
    ```
 3. Build the specialized SIAPS controller model using the repository Modelfile:
    ```powershell
-   ollama create siaps-controller -f backend/ai_models/Modelfile
+   ollama create siaps-assistant -f backend/ai_models/Modelfile
    ```
 
 ### Step 1.3: Launch and Verify
