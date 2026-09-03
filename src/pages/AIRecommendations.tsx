@@ -59,7 +59,7 @@ export default function AIRecommendations({ onNavigate }: { onNavigate: (s: stri
     <div className="p-6 max-w-screen-2xl mx-auto space-y-5">
       <PageHeader
         title="AI Recommendations"
-        subtitle={`Pre-storm planning active · ${aiRecommendations.length} recommendations since 06:00 · ${pending.length} awaiting approval`}
+        subtitle={`Pre-storm planning active · ${recommendations.length} recommendations since 06:00 · ${pending.length} awaiting approval`}
         badge={
           <div className="flex items-center gap-1.5 px-2.5 py-1 bg-sky-50 border border-sky-200 rounded-lg text-xs font-semibold text-sky-700">
             <Bot size={12} />

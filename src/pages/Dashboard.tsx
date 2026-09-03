@@ -228,9 +228,9 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
             {!isMobile && (
               <div style={{ display: "flex", borderBottom: "1px solid var(--border)" }}>
                 {[
-                  { icon: <Sun size={12} style={{ color: "#F59E0B" }} />, label: "Solar",     value: powerData.solar.output, cap: powerData.solar.capacity, c: "#F59E0B", status: "normal" as const },
-                  { icon: <Wind size={12} style={{ color: "#38BDF8" }} />, label: "Wind",     value: powerData.wind.output,  cap: powerData.wind.capacity,  c: "#38BDF8", status: "normal" as const },
-                  { icon: <Flame size={12} style={{ color: "var(--sidebar-text)" }} />, label: "Generator", value: 0, cap: 80, c: "#94A3B8", status: "standby" as const },
+                  { icon: <Sun size={12} style={{ color: "#F59E0B" }} />, label: "Solar",     value: power.solar.output, cap: power.solar.capacity, c: "#F59E0B", status: (power.solar.output > 0 ? "normal" : "standby") as any },
+                  { icon: <Wind size={12} style={{ color: "#38BDF8" }} />, label: "Wind",     value: power.wind.output,  cap: power.wind.capacity,  c: "#38BDF8", status: (power.wind.output > 0 ? "normal" : "standby") as any },
+                  { icon: <Flame size={12} style={{ color: "var(--sidebar-text)" }} />, label: "Generator", value: power.generator.output, cap: power.generator.capacity || 80, c: "#94A3B8", status: (power.generator.output > 0 ? "normal" : "standby") as any },
                 ].map((s, i) => (
                   <div key={s.label} style={{ flex: 1, padding: "14px 20px", borderRight: i < 2 ? "1px solid var(--border)" : "none" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
@@ -252,9 +252,9 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
             {isMobile && (
               <div style={{ display: "flex", borderBottom: "1px solid var(--border)", padding: "10px 14px", gap: 16 }}>
                 {[
-                  { icon: <Sun size={11} style={{ color: "#F59E0B" }} />, v: `${powerData.solar.output}`, label: "Solar" },
-                  { icon: <Wind size={11} style={{ color: "#38BDF8" }} />, v: `${powerData.wind.output}`, label: "Wind" },
-                  { icon: <Flame size={11} style={{ color: "var(--sidebar-text)" }} />, v: "Off", label: "Gen" },
+                  { icon: <Sun size={11} style={{ color: "#F59E0B" }} />, v: `${power.solar.output}`, label: "Solar" },
+                  { icon: <Wind size={11} style={{ color: "#38BDF8" }} />, v: `${power.wind.output}`, label: "Wind" },
+                  { icon: <Flame size={11} style={{ color: "var(--sidebar-text)" }} />, v: power.generator.output > 0 ? `${power.generator.output}k` : "Off", label: "Gen" },
                 ].map(s => (
                   <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 5 }}>
                     {s.icon}

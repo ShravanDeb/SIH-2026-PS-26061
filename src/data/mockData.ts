@@ -28,6 +28,7 @@ export const powerData = {
   },
   totalGeneration: 49.6,
   totalConsumption: 47.3,
+  netBalance: 2.3,
   renewableContribution: 100,
   gridExport: 0,
 };
