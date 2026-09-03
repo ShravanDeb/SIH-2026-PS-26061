@@ -60,7 +60,7 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
             Overview
           </h1>
           <p style={{ fontSize: 12, color: "var(--text-3)", lineHeight: 1.5 }}>
-            {isMobile ? "Svalbard Station Alpha" : `${stationData.name} · 78.2°N 15.4°E · ${stationData.uptime} uptime`}
+            {isMobile ? "Bharati Antarctic Station" : `${stationData.name} · 69.4°S 76.2°E · Larsemann Hills · ${stationData.uptime} uptime`}
           </p>
         </div>
         {/* Pills — desktop only */}

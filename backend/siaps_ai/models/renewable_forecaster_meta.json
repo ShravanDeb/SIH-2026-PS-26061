@@ -1,6 +1,6 @@
 {
   "solar_r2": 1.0,
-  "wind_r2": 0.419,
+  "wind_r2": 0.859,
   "training_samples": 7027,
   "features": [
     "hour",

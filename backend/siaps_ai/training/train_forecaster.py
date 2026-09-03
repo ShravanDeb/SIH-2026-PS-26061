@@ -53,7 +53,7 @@ def generate_synthetic_historical_telemetry(num_samples: int = 4320): # 6 months
 def load_or_generate_training_data():
     scada_csv = os.path.join(os.path.dirname(__file__), "..", "data", "siaps_scada_training_dataset_2024.csv")
     if os.path.exists(scada_csv):
-        print(f"[SIAPS AI] Loading REAL Svalbard 2024 SCADA Dataset: {scada_csv} (8,784 rows)...")
+        print(f"[SIAPS AI] Loading REAL Bharati Antarctic Station 2024 SCADA Dataset: {scada_csv} (8,784 rows)...")
         df = pd.read_csv(scada_csv)
         df["hour"] = pd.to_datetime(df["timestamp"]).dt.hour
         df["month"] = pd.to_datetime(df["timestamp"]).dt.month

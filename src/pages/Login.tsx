@@ -201,7 +201,7 @@ export default function Login({ onLogin }: { onLogin: (user: User) => void }) {
                 fontSize: 10, fontWeight: 700, color: "#A5B4FC",
                 letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 20,
               }}>
-                Svalbard · Norway
+                Larsemann Hills · Antarctica
               </p>
 
               <h1 style={{
@@ -210,7 +210,7 @@ export default function Login({ onLogin }: { onLogin: (user: User) => void }) {
                 letterSpacing: "-0.02em", color: "#E8EEF8",
                 marginBottom: 6,
               }}>
-                Station<br />Alpha
+                Bharati<br />Station
               </h1>
 
               {/* Cyan rule */}
@@ -223,8 +223,8 @@ export default function Login({ onLogin }: { onLogin: (user: User) => void }) {
               {/* Stat grid */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px 24px" }}>
                 {[
-                  { label: "Latitude",    value: "78°13′N", mono: true },
-                  { label: "Longitude",   value: "15°26′E", mono: true },
+                  { label: "Latitude",    value: "69°24′S", mono: true },
+                  { label: "Longitude",   value: "76°11′E", mono: true },
                   { label: "Outside",     value: "−23.4°C", mono: true, accent: true },
                   { label: "Wind speed",  value: "14 m/s",  mono: true },
                 ].map(s => (
@@ -307,7 +307,7 @@ export default function Login({ onLogin }: { onLogin: (user: User) => void }) {
               </div>
               <div>
                 <p style={{ color: "#E8EEF8", fontWeight: 900, fontSize: 14, letterSpacing: "0.12em" }}>SIAPS</p>
-                <p style={{ color: "#636678", fontSize: 10 }}>Station Alpha · Svalbard</p>
+                <p style={{ color: "#636678", fontSize: 10 }}>Bharati & Maitri · Antarctica</p>
               </div>
             </div>
           )}
@@ -528,7 +528,7 @@ export default function Login({ onLogin }: { onLogin: (user: User) => void }) {
                 <p style={{ fontSize: 11, color: "#4A4D60", textAlign: "center", lineHeight: 1.7 }}>
                   Unauthorised access is prohibited.<br />
                   <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 10, color: "#404458" }}>
-                    SIAPS v2.4.1 · UNIS / Norwegian Polar Institute
+                    SIAPS v2.4.1 · NCPOR / Ministry of Earth Sciences, Govt. of India
                   </span>
                 </p>
               </div>

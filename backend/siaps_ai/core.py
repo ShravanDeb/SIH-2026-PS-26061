@@ -75,6 +75,12 @@ class SiapsAiCore:
         now_utc = datetime.utcnow().strftime("%H:%M:%S UTC")
         snapshot = {
             "timestamp": now_utc,
+            "station": {
+                "name": "Bharati Antarctic Research Station",
+                "location": "69°24′S 76°11′E · Larsemann Hills, East Antarctica",
+                "agency": "NCPOR / Ministry of Earth Sciences, Govt. of India",
+                "alt_station": "Maitri Station (70°46′S 11°44′E · Schirmacher Oasis)"
+            },
             "power": {
                 "solar": {
                     "output": solar_output,

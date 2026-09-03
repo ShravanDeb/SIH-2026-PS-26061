@@ -3,7 +3,10 @@ from typing import Dict, Any
 
 class StationDigitalTwin:
     """
-    Physical virtual model of Svalbard Station Alpha (78.2°N 15.4°E).
+    Physical virtual model of Indian Antarctic Research Stations:
+    - Bharati Station (69°24′S 76°11′E, Larsemann Hills)
+    - Maitri Station (70°46′S 11°44′E, Schirmacher Oasis)
+    Administered by NCPOR / Ministry of Earth Sciences, Govt. of India.
     Calculates solar array physics, wind turbine aerodynamics,
     and LiFePO4 battery dynamics.
     Operates 100% deterministically without LLM.

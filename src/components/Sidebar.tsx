@@ -117,7 +117,7 @@ export default function Sidebar({
               <div style={{ minWidth: 0 }}>
                 <p style={{ color: "white", fontWeight: 800, fontSize: 14, letterSpacing: "0.05em", lineHeight: 1 }}>SIAPS</p>
                 <p style={{ fontSize: 9, color: "var(--sidebar-text)", marginTop: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  Svalbard Station Alpha
+                  Bharati Station · Antarctica
                 </p>
               </div>
             </div>

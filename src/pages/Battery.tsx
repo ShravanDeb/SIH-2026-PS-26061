@@ -14,7 +14,7 @@ export default function Battery() {
     <div className="p-6 max-w-screen-xl mx-auto space-y-5">
       <PageHeader
         title="Battery Storage"
-        subtitle="Rack 1–4 · LiFePO₄ · 400 kWh nominal · BMS v3.2 · Svalbard Station Alpha"
+        subtitle="Rack 1–4 · LiFePO₄ · 400 kWh nominal · BMS v3.2 · Bharati Antarctic Station"
         badge={<StatusBadge status="charging" />}
       />
 

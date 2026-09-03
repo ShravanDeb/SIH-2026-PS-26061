@@ -23,7 +23,7 @@ class MissionControlAgent:
         safety = telemetry["safety"]
 
         ground_truth_context = (
-            f"Station: Svalbard Station Alpha (78.2°N 15.4°E)\n"
+            f"Station: Bharati Antarctic Research Station (69°24′S 76°11′E, Larsemann Hills, Antarctica · NCPOR / MoES, Govt. of India)\n"
             f"Solar: {power['solar']['output']} kW / {power['solar']['capacity']} kW\n"
             f"Wind: {power['wind']['output']} kW / {power['wind']['capacity']} kW (Speed: {weather['windSpeed']} m/s)\n"
             f"Generator: {power['generator']['output']} kW (Status: {power['generator']['status']})\n"

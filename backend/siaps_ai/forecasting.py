@@ -2,14 +2,20 @@ import requests
 from datetime import datetime
 from typing import Dict, Any, List
 
+BHARATI_COORDS = {"lat": -69.41, "lon": 76.19, "name": "Bharati Station", "region": "Larsemann Hills, Antarctica"}
+MAITRI_COORDS = {"lat": -70.77, "lon": 11.73, "name": "Maitri Station", "region": "Schirmacher Oasis, Antarctica"}
+
 class StationForecastingEngine:
     """
     Forecasting Engine of SIAPS AI:
-    - Queries live Open-Meteo Arctic data (Svalbard 78.22°N, 15.65°E) with offline fallback.
+    - Queries live Antarctic meteorological data for Indian Polar Stations:
+      * Bharati Station (69°24′S 76°11′E, Larsemann Hills)
+      * Maitri Station (70°46′S 11°44′E, Schirmacher Oasis)
     - Estimates future heating and operational electrical demand.
     - Operates 100% independently of any LLM.
     """
-    def __init__(self):
+    def __init__(self, station: str = "bharati"):
+        self.active_coords = BHARATI_COORDS if station == "bharati" else MAITRI_COORDS
         self.cached_weather = None
         self.last_fetch = datetime.min
         self.cache_ttl = 300 # 5 min
@@ -22,8 +28,8 @@ class StationForecastingEngine:
         try:
             url = "https://api.open-meteo.com/v1/forecast"
             params = {
-                "latitude": 78.22,
-                "longitude": 15.65,
+                "latitude": self.active_coords["lat"],
+                "longitude": self.active_coords["lon"],
                 "current": ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "wind_speed_10m", "wind_gusts_10m", "direct_radiation"],
                 "forecast_days": 3
             }

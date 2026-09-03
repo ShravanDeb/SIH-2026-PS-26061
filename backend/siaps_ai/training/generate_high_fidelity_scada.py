@@ -3,14 +3,14 @@ import pandas as pd
 import numpy as np
 
 DATA_DIR = os.path.join(os.path.dirname(__file__), "..", "data")
-WEATHER_CSV = os.path.join(DATA_DIR, "real_svalbard_weather_2024.csv")
+WEATHER_CSV = os.path.join(DATA_DIR, "real_bharati_antarctica_weather_2024.csv")
 OUTPUT_SCADA_CSV = os.path.join(DATA_DIR, "siaps_scada_training_dataset_2024.csv")
 
 def generate_microgrid_scada_from_real_weather():
     if not os.path.exists(WEATHER_CSV):
         raise FileNotFoundError(f"Weather data file not found: {WEATHER_CSV}")
 
-    print("[SIAPS AI] Loading REAL Svalbard 2024 weather telemetry...")
+    print("[SIAPS AI] Loading REAL Bharati Antarctic Station 2024 weather telemetry...")
     df = pd.read_csv(WEATHER_CSV)
 
     # Microgrid Parameters

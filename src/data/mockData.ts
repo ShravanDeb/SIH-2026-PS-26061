@@ -1,6 +1,8 @@
 export const stationData = {
-  name: "SIAPS — Svalbard Station Alpha",
-  location: "78.2°N 15.4°E · Svalbard, Norway",
+  name: "SIAPS — Bharati Antarctic Station",
+  location: "69°24′S 76°11′E · Larsemann Hills, Antarctica",
+  agency: "NCPOR · Ministry of Earth Sciences, Govt. of India",
+  altStation: "Maitri Station · 70°46′S 11°44′E · Schirmacher Oasis",
   operatingMode: "autonomous",
   overallHealth: 94,
   lastUpdated: "2025-03-14T09:42:00Z",
