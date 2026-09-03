@@ -184,3 +184,44 @@ export async function submitManualOverride(action: string, pin: string) {
     return { success: false, error: "Backend not reachable, override executed locally." };
   }
 }
+
+export async function executeSimulationStep(payload: {
+  wind_speed: number;
+  wind_gust: number;
+  irradiance: number;
+  temperature: number;
+  demand: number;
+  battery_soc: number;
+  vibration_rms: number;
+  station?: string;
+}) {
+  try {
+    const res = await fetch(`${BACKEND_API_BASE}/simulation/step`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    // offline fallback
+  }
+  return null;
+}
+
+export async function fetchSimulationExplain(scenario: string, telemetry: any, dispatch: any) {
+  try {
+    const res = await fetch(`${BACKEND_API_BASE}/simulation/explain`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ scenario, telemetry, dispatch })
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    // offline fallback
+  }
+  return null;
+}
