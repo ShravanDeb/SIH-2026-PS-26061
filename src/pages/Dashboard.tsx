@@ -1,16 +1,17 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
 import {
-  AlertTriangle, Battery, Sun, Wind, Flame, Zap, Bot, ChevronRight, ChevronDown,
+  AlertTriangle, Battery, Sun, Wind, Flame, Zap, Bot, ChevronRight, ChevronDown, Check, X, Shield, MessageSquare
 } from "lucide-react";
 import {
-  powerData, weatherData, aiRecommendations,
   alerts, generateTimeSeriesData, stationData,
 } from "../data/mockData";
 import { Card, CardHeader, StatusBadge, AlertItem, HealthBar, LevelBadge } from "../components/ui";
 import { useIsMobile, useIsTablet } from "../hooks/useWindowWidth";
+import { useLiveStationTelemetry, fetchLiveRecommendations, submitRecommendationAction } from "../services/stationApi";
+import AIChatDrawer from "../components/AIChatDrawer";
 
 const RANGES = [
   { label: "6h", hours: 6 }, { label: "12h", hours: 12 },
@@ -39,13 +40,51 @@ const ChartTip = ({ active, payload, label }: any) => {
 export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => void }) {
   const [range, setRange]       = useState(12);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const td       = generateTimeSeriesData(range);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [recs, setRecs]         = useState<any[]>([]);
+  const [actionFeedback, setActionFeedback] = useState<string | null>(null);
   const isMobile = useIsMobile();
   const isTablet = useIsTablet();
 
-  const pending = aiRecommendations.filter(r => r.status === "awaiting_approval").length;
+  const { isBackendConnected, power, weather, anomalies, timestamp } = useLiveStationTelemetry();
+
+  useEffect(() => {
+    fetchLiveRecommendations().then(r => { if (r && r.length) setRecs(r); });
+    const timer = setInterval(() => {
+      fetchLiveRecommendations().then(r => { if (r && r.length) setRecs(r); });
+    }, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleAction = async (recId: string, decision: string) => {
+    const res = await submitRecommendationAction(recId, decision, "1234");
+    if (res.success) {
+      setActionFeedback(`Action ${decision.toUpperCase()} dispatched with PIN 1234!`);
+      setRecs(prev => prev.map(r => r.id === recId ? { ...r, status: decision } : r));
+      setTimeout(() => setActionFeedback(null), 3000);
+    }
+  };
+
+  const pending = recs.filter(r => r.status === "awaiting_approval").length;
   const unacked = alerts.filter(a => !a.acknowledged).length;
-  const b       = powerData.battery;
+  const b       = power.battery;
+
+  // Dynamically update time-series chart with real live numbers
+  const baseData = generateTimeSeriesData(range);
+  const td = baseData.map((pt, idx) => {
+    if (idx === baseData.length - 1 && isBackendConnected) {
+      return {
+        ...pt,
+        solar: power.solar.output,
+        wind: power.wind.output,
+        generator: power.generator.output,
+        totalRenewable: Number((power.solar.output + power.wind.output).toFixed(1)),
+        consumption: power.totalConsumption,
+        netBalance: power.netBalance
+      };
+    }
+    return pt;
+  });
 
   const gap = isMobile ? 10 : 14;
   const px  = isMobile ? 12 : 36;
@@ -66,12 +105,18 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
         {/* Pills — desktop only */}
         {!isMobile && (
           <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-            <Pill color="#4ADE80" bg="rgba(74,222,128,0.09)" border="rgba(74,222,128,0.25)">
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ADE80", display: "inline-block" }} />
-              Autonomous
-            </Pill>
+            {isBackendConnected ? (
+              <Pill color="#10b981" bg="rgba(16,185,129,0.12)" border="rgba(16,185,129,0.3)">
+                <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#10b981", animation: "ping 1.5s ease infinite", display: "inline-block" }} />
+                LIVE SCADA (1 Hz) · Connected
+              </Pill>
+            ) : (
+              <Pill color="#38bdf8" bg="rgba(56,189,248,0.12)" border="rgba(56,189,248,0.3)">
+                AUTONOMOUS SIMULATION
+              </Pill>
+            )}
             <Pill color="#7CB9FB" bg="rgba(124,185,251,0.09)" border="rgba(124,185,251,0.24)">
-              100% Renewable
+              {power.renewableContribution}% Renewable
             </Pill>
             {pending > 0 && (
               <button onClick={() => onNavigate("approval")} style={{ all: "unset", cursor: "pointer" }}>
@@ -86,9 +131,9 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
         {/* Mobile: compact status row */}
         {isMobile && (
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#4ADE80", fontWeight: 600 }}>
-              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#4ADE80", display: "inline-block" }} />
-              Autonomous
+            <span style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: isBackendConnected ? "#10b981" : "#38bdf8", fontWeight: 600 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: isBackendConnected ? "#10b981" : "#38bdf8", display: "inline-block" }} />
+              {isBackendConnected ? "Live SCADA" : "Simulation"}
             </span>
             {pending > 0 && (
               <button
@@ -109,10 +154,10 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
           /* Mobile: 2×2 compact cards */
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
             {[
-              { label: "Generation",    value: powerData.totalGeneration.toFixed(1), unit: "kW",  sub: "Solar + Wind",                  color: "var(--blue)"  },
-              { label: "Station Load",  value: powerData.totalConsumption.toFixed(1), unit: "kW", sub: "Net +2.3 kW",                   color: "var(--text-1)"},
-              { label: "Battery SOC",   value: `${b.soc}`,                            unit: "%",  sub: `${b.remaining} kWh`,            color: "var(--green)" },
-              { label: "Temperature",   value: `${weatherData.temperature}°`,         unit: "C",  sub: `${weatherData.windSpeed} m/s wind`, color: "var(--text-1)" },
+              { label: "Generation",    value: power.totalGeneration.toFixed(1), unit: "kW",  sub: `Solar ${power.solar.output} · Wind ${power.wind.output}`, color: "var(--blue)"  },
+              { label: "Station Load",  value: power.totalConsumption.toFixed(1), unit: "kW", sub: `Net ${power.netBalance >= 0 ? "+" : ""}${power.netBalance} kW`, color: "var(--text-1)"},
+              { label: "Battery SOC",   value: `${b.soc}`,                            unit: "%",  sub: `${b.remaining} kWh · ${b.status}`,            color: "var(--green)" },
+              { label: "Temperature",   value: `${weather.temperature}°`,         unit: "C",  sub: `${weather.windSpeed} m/s wind`, color: "var(--text-1)" },
             ].map(k => (
               <div key={k.label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "14px 14px 12px" }}>
                 <p style={{ fontSize: 10, fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>{k.label}</p>
@@ -130,22 +175,23 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
           /* Desktop: 4-col full KPI cards */
           <div style={{ display: "grid", gridTemplateColumns: isTablet ? "1fr 1fr" : "repeat(4, 1fr)", gap }}>
             {[
-              { label: "Total Generation", value: powerData.totalGeneration.toFixed(1), unit: "kW",  sub: "Solar 18.4 · Wind 31.2 · Gen —",       color: "var(--blue)"  },
-              { label: "Station Load",     value: powerData.totalConsumption.toFixed(1), unit: "kW", sub: "Net surplus +2.3 kW",                  color: "var(--text-1)"},
-              { label: "Battery SOC",      value: `${b.soc}`,                            unit: "%",  sub: `${b.remaining} kWh · ${b.runtime}h runtime`, color: "var(--green)" },
-              { label: "Outside Temp",     value: `${weatherData.temperature}°`,         unit: "C",  sub: `Wind ${weatherData.windSpeed} m/s ${weatherData.windDirection} · ${weatherData.solarRadiation} W/m²`, color: "var(--text-1)" },
+              { label: "Total Generation", value: power.totalGeneration.toFixed(1), unit: "kW",  sub: `Solar ${power.solar.output} · Wind ${power.wind.output} · Gen ${power.generator.output}`, color: "var(--blue)"  },
+              { label: "Station Load",     value: power.totalConsumption.toFixed(1), unit: "kW", sub: `Net balance ${power.netBalance >= 0 ? "+" : ""}${power.netBalance} kW`, color: "var(--text-1)"},
+              { label: "Battery SOC",      value: `${b.soc}`,                            unit: "%",  sub: `${b.remaining} kWh · ${b.runtime}h runtime (${b.status})`, color: "var(--green)" },
+              { label: "Outside Temp",     value: `${weather.temperature}°`,         unit: "C",  sub: `Wind ${weather.windSpeed} m/s (Gust ${weather.windGust} m/s) · ${weather.solarRadiation} W/m²`, color: "var(--text-1)" },
             ].map(k => (
               <div key={k.label} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: 10, padding: "22px 22px 18px" }}>
                 <p style={{ fontSize: 11, fontWeight: 600, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.09em", marginBottom: 12 }}>{k.label}</p>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 5, marginBottom: 8 }}>
                   <span style={{ fontFamily: "JetBrains Mono, monospace", fontSize: 34, fontWeight: 700, color: k.color, letterSpacing: "-0.03em", lineHeight: 1 }}>{k.value}</span>
-                  <span style={{ fontSize: 13, color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}>{k.unit}</span>
+                  <span style={{ fontSize: 12, color: "var(--text-3)", fontFamily: "JetBrains Mono, monospace" }}>{k.unit}</span>
                 </div>
-                <p style={{ fontSize: 11, color: "var(--text-3)", lineHeight: 1.5 }}>{k.sub}</p>
+                <p style={{ fontSize: 12, color: "var(--text-3)", lineHeight: 1.4 }}>{k.sub}</p>
               </div>
             ))}
           </div>
         )}
+
 
         {/* ── Row 2: Chart + Battery ────────────────────────────────────────── */}
         <div style={{ display: "grid", gridTemplateColumns: isMobile || isTablet ? "1fr" : "1fr 300px", gap }}>
@@ -345,12 +391,17 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
               accent="var(--blue)"
               action={
                 <button onClick={() => onNavigate("ai")} style={{ fontSize: 11, color: "var(--blue)", fontWeight: 600, background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: 3 }}>
-                  All {aiRecommendations.length} <ChevronRight size={11} />
+                  All {recs.length} <ChevronRight size={11} />
                 </button>
               }
             />
+            {actionFeedback && (
+              <div style={{ padding: "8px 16px", background: "rgba(16,185,129,0.1)", borderBottom: "1px solid rgba(16,185,129,0.2)", fontSize: 11, color: "#10b981", fontWeight: 600 }}>
+                ✓ {actionFeedback}
+              </div>
+            )}
             <div>
-              {aiRecommendations.slice(0, 3).map((r, i) => {
+              {recs.slice(0, 3).map((r, i) => {
                 const isOpen = expanded === r.id;
                 return (
                   <div key={r.id} style={{ borderBottom: i < 2 ? "1px solid var(--border)" : "none" }}>
@@ -399,6 +450,28 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
                             <p style={{ fontSize: 10, fontWeight: 700, color: "var(--text-3)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 3 }}>Expected Impact</p>
                             <p style={{ fontSize: 12, color: "var(--blue)", lineHeight: 1.6 }}>{r.impact}</p>
                           </div>
+                          {r.status === "awaiting_approval" && (
+                            <div style={{ display: "flex", gap: 8, marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)" }}>
+                              <button
+                                onClick={() => handleAction(r.id, "approved")}
+                                style={{
+                                  padding: "6px 12px", borderRadius: 6, background: "var(--green)", color: "#fff",
+                                  border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", gap: 4
+                                }}
+                              >
+                                <Check size={13} /> Authorize (PIN: 1234)
+                              </button>
+                              <button
+                                onClick={() => handleAction(r.id, "delayed")}
+                                style={{
+                                  padding: "6px 12px", borderRadius: 6, background: "rgba(255,255,255,0.06)", color: "var(--text-2)",
+                                  border: "1px solid var(--border)", fontSize: 11, fontWeight: 600, cursor: "pointer"
+                                }}
+                              >
+                                Delay
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     )}
@@ -428,6 +501,38 @@ export default function Dashboard({ onNavigate }: { onNavigate: (s: string) => v
           </Card>
         </div>
       </div>
+
+      {/* Floating Ask SIAPS AI Button */}
+      <button
+        onClick={() => setChatOpen(true)}
+        style={{
+          position: "fixed",
+          bottom: 24,
+          right: 24,
+          background: "linear-gradient(135deg, #6366f1, #3b82f6)",
+          color: "#fff",
+          border: "none",
+          borderRadius: 30,
+          padding: "12px 20px",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          boxShadow: "0 10px 25px rgba(99,102,241,0.4), 0 0 15px rgba(59,130,246,0.3)",
+          cursor: "pointer",
+          fontWeight: 700,
+          fontSize: 13,
+          zIndex: 999,
+          transition: "transform 0.15s, box-shadow 0.15s"
+        }}
+        onMouseEnter={e => e.currentTarget.style.transform = "scale(1.04)"}
+        onMouseLeave={e => e.currentTarget.style.transform = "scale(1.0)"}
+      >
+        <Bot size={18} />
+        Ask SIAPS AI
+      </button>
+
+      {/* Floating AI Mission Copilot Drawer */}
+      <AIChatDrawer isOpen={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   );
 }

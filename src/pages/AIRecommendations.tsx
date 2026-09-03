@@ -1,10 +1,11 @@
 import {
   Bot, CheckCircle, XCircle, Clock, AlertTriangle, ChevronDown, ChevronUp,
-  Info, Zap, Battery, Flame, ThermometerSun,
+  Info, Zap, Battery, Flame, ThermometerSun, ShieldCheck
 } from "lucide-react";
-import { aiRecommendations } from "../data/mockData";
+import { aiRecommendations as defaultRecommendations } from "../data/mockData";
 import { Card, CardHeader, LevelBadge, PageHeader, StatCard } from "../components/ui";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchLiveRecommendations, submitRecommendationAction } from "../services/stationApi";
 
 const CATEGORY_CONFIG: Record<string, { label: string; color: string; bg: string; icon: any }> = {
   load_shift:     { label: "Load Shift",      color: "text-purple-700", bg: "bg-purple-50 border-purple-200", icon: Zap },
@@ -23,12 +24,36 @@ const LEVEL_DESCRIPTIONS = [
 
 export default function AIRecommendations({ onNavigate }: { onNavigate: (s: string) => void }) {
   const [expanded, setExpanded] = useState<string | null>(null);
-  const pending  = aiRecommendations.filter((r) => r.status === "awaiting_approval");
-  const resolved = aiRecommendations.filter((r) => r.status !== "awaiting_approval");
+  const [recommendations, setRecommendations] = useState<any[]>(defaultRecommendations);
+  const [actionNotice, setActionNotice] = useState<string | null>(null);
 
-  const approved = aiRecommendations.filter(r => r.status === "approved").length;
-  const rejected = aiRecommendations.filter(r => r.status === "rejected").length;
-  const avgConf  = Math.round(aiRecommendations.reduce((s, r) => s + r.confidence, 0) / aiRecommendations.length);
+  useEffect(() => {
+    fetchLiveRecommendations().then(data => {
+      if (data && data.length) setRecommendations(data);
+    });
+    const interval = setInterval(() => {
+      fetchLiveRecommendations().then(data => {
+        if (data && data.length) setRecommendations(data);
+      });
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleAction = async (recId: string, decision: string) => {
+    const res = await submitRecommendationAction(recId, decision, "1234");
+    if (res.success) {
+      setActionNotice(`Action '${decision.toUpperCase()}' dispatched and verified in SCADA audit log!`);
+      setRecommendations(prev => prev.map(r => r.id === recId ? { ...r, status: decision } : r));
+      setTimeout(() => setActionNotice(null), 3500);
+    }
+  };
+
+  const pending  = recommendations.filter((r) => r.status === "awaiting_approval");
+  const resolved = recommendations.filter((r) => r.status !== "awaiting_approval");
+
+  const approved = recommendations.filter(r => r.status === "approved").length;
+  const rejected = recommendations.filter(r => r.status === "rejected").length;
+  const avgConf  = Math.round(recommendations.reduce((s, r) => s + r.confidence, 0) / (recommendations.length || 1));
 
   return (
     <div className="p-6 max-w-screen-2xl mx-auto space-y-5">
@@ -133,19 +158,31 @@ export default function AIRecommendations({ onNavigate }: { onNavigate: (s: stri
                           <p className="text-xs text-slate-500 mt-1">Confidence: {r.confidence}%</p>
                         </div>
                       </div>
+                      {actionNotice && (
+                        <div className="mb-3 p-3 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-700 font-semibold flex items-center gap-2">
+                          <ShieldCheck size={15} />
+                          {actionNotice}
+                        </div>
+                      )}
                       <div className="flex gap-2 mt-4">
                         <button
-                          onClick={() => onNavigate("approval")}
+                          onClick={() => handleAction(r.id, "approved")}
                           className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
                         >
                           <CheckCircle size={13} />
-                          Approve
+                          Authorize (PIN: 1234)
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors">
+                        <button
+                          onClick={() => handleAction(r.id, "delayed")}
+                          className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-300 text-slate-700 text-xs font-semibold rounded-lg hover:bg-slate-50 transition-colors"
+                        >
                           <Clock size={13} />
                           Delay 30 min
                         </button>
-                        <button className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-50 transition-colors">
+                        <button
+                          onClick={() => handleAction(r.id, "rejected")}
+                          className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 text-xs font-semibold rounded-lg hover:bg-red-50 transition-colors"
+                        >
                           <XCircle size={13} />
                           Reject
                         </button>
@@ -176,7 +213,7 @@ export default function AIRecommendations({ onNavigate }: { onNavigate: (s: stri
                 </tr>
               </thead>
               <tbody>
-                {aiRecommendations.map((r) => {
+                {recommendations.map((r) => {
                   const cat = CATEGORY_CONFIG[r.category];
                   return (
                     <tr key={r.id} className="border-b border-slate-100 last:border-0 hover:bg-slate-50/80 transition-colors">

@@ -99,6 +99,36 @@ export async function submitRecommendationAction(recId: string, decision: string
   }
 }
 
+export async function fetchLiveRecommendations() {
+  try {
+    const res = await fetch(`${BACKEND_API_BASE}/recommendations`, { cache: "no-store" });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch {
+    // Fallback to mock
+  }
+  return aiRecommendations;
+}
+
+export async function sendOperatorChatMessage(query: string) {
+  try {
+    const res = await fetch(`${BACKEND_API_BASE}/chat`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ query })
+    });
+    if (res.ok) {
+      return await res.json();
+    }
+  } catch (err) {
+    return {
+      success: false,
+      response: "SIAPS AI Telemetry Gateway offline. Ensure backend is running on port 8000."
+    };
+  }
+}
+
 export async function submitManualOverride(action: string, pin: string) {
   try {
     const res = await fetch(`${BACKEND_API_BASE}/override`, {
