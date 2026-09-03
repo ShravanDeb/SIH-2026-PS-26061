@@ -1,5 +1,6 @@
 import os
 import json
+import joblib
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
@@ -82,6 +83,10 @@ def train_renewable_forecasters():
     wind_model.fit(X_train, y_wind_train)
     wind_preds = wind_model.predict(X_test)
     print(f"  Wind Model R2 Score:  {r2_score(y_wind_test, wind_preds):.3f} | RMSE: {np.sqrt(mean_squared_error(y_wind_test, wind_preds)):.2f} kW")
+
+    # Save trained models
+    joblib.dump(solar_model, os.path.join(MODELS_DIR, "solar_model.joblib"))
+    joblib.dump(wind_model, os.path.join(MODELS_DIR, "wind_model.joblib"))
 
     # Save models metadata
     meta = {
