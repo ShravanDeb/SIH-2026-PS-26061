@@ -1,7 +1,7 @@
 {
-  "solar_r2": 0.998,
-  "wind_r2": 0.998,
-  "training_samples": 3456,
+  "solar_r2": 1.0,
+  "wind_r2": 0.419,
+  "training_samples": 7027,
   "features": [
     "hour",
     "month",

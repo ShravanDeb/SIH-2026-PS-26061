@@ -1,5 +1,6 @@
 import os
 import json
+import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
@@ -48,10 +49,23 @@ def generate_synthetic_historical_telemetry(num_samples: int = 4320): # 6 months
 
     return X, y_solar, y_wind
 
+def load_or_generate_training_data():
+    scada_csv = os.path.join(os.path.dirname(__file__), "..", "data", "siaps_scada_training_dataset_2024.csv")
+    if os.path.exists(scada_csv):
+        print(f"[SIAPS AI] Loading REAL Svalbard 2024 SCADA Dataset: {scada_csv} (8,784 rows)...")
+        df = pd.read_csv(scada_csv)
+        df["hour"] = pd.to_datetime(df["timestamp"]).dt.hour
+        df["month"] = pd.to_datetime(df["timestamp"]).dt.month
+        X = df[["hour", "month", "solar_irradiance_wm2", "wind_speed_ms", "temperature_c"]].values
+        y_solar = df["solar_output_kw"].values
+        y_wind = df["wind_output_kw"].values
+        return X, y_solar, y_wind
+
+    print("[SIAPS AI] Real SCADA dataset not found, generating synthetic fallback...")
+    return generate_synthetic_historical_telemetry()
+
 def train_renewable_forecasters():
-    print("[SIAPS AI] Generating historical Arctic sensor training dataset...")
-    X, y_solar, y_wind = generate_synthetic_historical_telemetry()
-    
+    X, y_solar, y_wind = load_or_generate_training_data()
     split = int(0.8 * len(X))
     X_train, X_test = X[:split], X[split:]
     y_solar_train, y_solar_test = y_solar[:split], y_solar[split:]
